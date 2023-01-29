@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Distributions.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RandomGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
