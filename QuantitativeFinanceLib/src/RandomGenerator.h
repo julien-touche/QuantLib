@@ -18,17 +18,40 @@ public:
 	void GetGaussians(vDbl & draws) const;
 
 	template <GEN_GAUSS GAUSS_TYPE>
-	void GetCorrGaussians(vDbl& draws) const;
+	colvec GetCorrGaussians(const mat & corr, vDbl& draws) const;
 
 private:
 	unsigned long itsDim;
 };
 
+/*** supposing corr is at-least semi-definite ***/
 template <GEN_GAUSS GAUSS_TYPE>
-void RandomGenerator::GetCorrGaussians(vDbl& draws) const
+colvec RandomGenerator::GetCorrGaussians(const mat & corr, vDbl& draws) const
 {
 	const Unt size = draws.size();
-	
 
+	if (itsDim != size)
+	{
+		throw std::invalid_argument("size of gaussian vector does not match dimensionality of the generator");
+	}
+	if (size != corr.n_cols)
+	{
+		throw std::invalid_argument("correlation matrix does not have the correct size");
+	}
+
+	GetGaussians<GAUSS_TYPE>(draws);
+	mat tmpMat(corr.n_rows, corr.n_cols);
+
+	if (corr.is_sympd())
+	{
+		tmpMat = chol(mat, "lower");
+	}
+	else
+	{
+		tmpMat = sqrtmat(mat);
+	}
+	colvec armaDraws(conv_to<colvec>::from(draws));
+	armaDraws = tmpMat * armaDraws;
+	return armaDraws;
 }
 
