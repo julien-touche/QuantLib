@@ -1,32 +1,40 @@
 #pragma once
 #include "typedef.h"
+#include <random>
 #include <armadillo>
 
 using namespace arma;
 class RandomGenerator
 {
+protected:
+	typedef std::shared_ptr<RandomGenerator> RdGenPtr;
 public:
-	RandomGenerator(unsigned long dim = 1) : itsDim(dim)
+	RandomGenerator(Unt dim = 1) : itsDim(dim)
+	{}
+	RandomGenerator(const RdGenPtr & rhs) : itsDim(rhs->itsDim)
 	{}
 
-	inline unsigned long	GetDim() const				{ return itsDim;	}
-	inline void				SetDim (unsigned long & dim){ itsDim = dim;		}
+	inline Unt		GetDim() const		{ return itsDim;	}
+	inline void		SetDim (Unt dim)	{ itsDim = dim;		}
 
-	virtual vDbl GetUniforms(Unt nbDraws) const = 0;
+	virtual vDbl GetUniforms(Unt nbDraws) = 0;
+
+	virtual void SetSeed(unsigned long _seed) = 0;
+	virtual void Skip(unsigned long length)	  = 0;
 
 	template <GEN_GAUSS GAUSS_TYPE>
-	void GetGaussians(vDbl & draws) const;
+	void GetGaussians(vDbl & draws);
 
 	template <GEN_GAUSS GAUSS_TYPE>
-	colvec GetCorrGaussians(const mat & corr, vDbl& draws) const;
+	colvec GetCorrGaussians(const mat & corr, vDbl& draws);
 
-private:
-	unsigned long itsDim;
+protected:
+	Unt itsDim;
 };
 
 /*** supposing corr is at-least semi-definite ***/
 template <GEN_GAUSS GAUSS_TYPE>
-colvec RandomGenerator::GetCorrGaussians(const mat & corr, vDbl& draws) const
+colvec RandomGenerator::GetCorrGaussians(const mat & corr, vDbl& draws)
 {
 	const Unt size = draws.size();
 
@@ -54,4 +62,37 @@ colvec RandomGenerator::GetCorrGaussians(const mat & corr, vDbl& draws) const
 	armaDraws = tmpMat * armaDraws;
 	return armaDraws;
 }
+
+class MersenneTwister : public RandomGenerator
+{
+protected	:
+	typedef std::shared_ptr<MersenneTwister> MrsPtr	;
+public	:
+	MersenneTwister(const std::shared_ptr<std::mt19937> eng, unsigned long _seed, Unt dim = 1)	: RandomGenerator(dim)
+																								, itsEngine(eng)
+																								, itsSeed(_seed)
+																								, itsMin(itsEngine->min())
+																								, itsMax(itsEngine->max())
+	{
+		if (0 == _seed) { itsSeed = 1; }
+		itsEngine->seed(itsSeed);
+	}
+
+	MersenneTwister(const MrsPtr & rhs) : RandomGenerator(rhs->itsDim)
+										, itsSeed(rhs->itsSeed)
+										, itsEngine(rhs->itsEngine)
+										, itsMin(rhs->itsMin)
+										, itsMax(rhs->itsMax)
+	{}
+
+	virtual vDbl GetUniforms(Unt nbDraws);
+	inline virtual void SetSeed(unsigned long _seed)	{ 0 == _seed ? itsSeed = 1 : itsSeed = _seed; }
+	inline virtual void Skip(unsigned long length)		{ itsEngine->discard(length); }
+
+private :
+	std::shared_ptr<std::mt19937> itsEngine;
+	unsigned long itsSeed;
+	const double itsMin;
+	const double itsMax;
+};
 

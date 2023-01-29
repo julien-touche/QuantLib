@@ -6,7 +6,7 @@
 
 
 template <>
-void RandomGenerator::GetGaussians<MARSAGLIA>(vDbl& draws) const
+void RandomGenerator::GetGaussians<MARSAGLIA>(vDbl& draws)
 {
 	const Unt size = draws.size();
 	if (size != itsDim)
@@ -34,7 +34,7 @@ void RandomGenerator::GetGaussians<MARSAGLIA>(vDbl& draws) const
 }
 
 template <>
-void RandomGenerator::GetGaussians<BOXMULLER>(vDbl& draws) const
+void RandomGenerator::GetGaussians<BOXMULLER>(vDbl& draws)
 {
 	const Unt size = draws.size();
 	if (size != itsDim)
@@ -55,7 +55,7 @@ void RandomGenerator::GetGaussians<BOXMULLER>(vDbl& draws) const
 }
 
 template <>
-void RandomGenerator::GetGaussians<INVERSE>(vDbl& draws) const
+void RandomGenerator::GetGaussians<INVERSE>(vDbl& draws)
 {
 	const Unt size			 = draws.size();
 	if (size != itsDim)
@@ -70,5 +70,16 @@ void RandomGenerator::GetGaussians<INVERSE>(vDbl& draws) const
 	{
 		*dIt = InvCdfNrm(*uIt);
 	}
+}
+
+vDbl MersenneTwister::GetUniforms(Unt nbDraws)
+{
+	vDbl draws(nbDraws);
+	vDbl::iterator dIt = draws.begin();
+	for (; dIt != draws.end(); ++dIt)
+	{
+		*dIt = ((*itsEngine)() - itsMin) / (itsMax - itsMin);
+	}
+	return draws;
 }
 
