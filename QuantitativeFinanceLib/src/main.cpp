@@ -9,5 +9,5 @@ int main()
 	MersenneTwister mtEng(eng, initSeed, dim);
 	vDbl gaussians(dim);
 	mtEng.GetGaussians<INVERSE>(gaussians);
-	cout << gaussians[0] << ", " << gaussians[1] << endl;
+	std::cout << gaussians[0] << ", " << gaussians[1] << std::endl;
 };

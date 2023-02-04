@@ -3,7 +3,6 @@
 #include <random>
 #include <armadillo>
 
-using namespace arma;
 class RandomGenerator
 {
 protected:
@@ -26,7 +25,7 @@ public:
 	void GetGaussians(vDbl & draws);
 
 	template <GEN_GAUSS GAUSS_TYPE>
-	colvec GetCorrGaussians(const mat & corr, vDbl& draws);
+	arma::colvec GetCorrGaussians(const arma::mat & corr, vDbl& draws);
 
 protected:
 	Unt itsDim;
@@ -34,7 +33,7 @@ protected:
 
 /*** supposing corr is at-least semi-definite ***/
 template <GEN_GAUSS GAUSS_TYPE>
-colvec RandomGenerator::GetCorrGaussians(const mat & corr, vDbl& draws)
+arma::colvec RandomGenerator::GetCorrGaussians(const arma::mat & corr, vDbl& draws)
 {
 	const Unt size = draws.size();
 
@@ -48,17 +47,17 @@ colvec RandomGenerator::GetCorrGaussians(const mat & corr, vDbl& draws)
 	}
 
 	GetGaussians<GAUSS_TYPE>(draws);
-	mat tmpMat(corr.n_rows, corr.n_cols);
+	arma::mat tmpMat(corr.n_rows, corr.n_cols);
 
 	if (corr.is_sympd())
 	{
-		tmpMat = chol(mat, "lower");
+		tmpMat = arma::chol(corr, "lower");
 	}
 	else
 	{
-		tmpMat = sqrtmat(mat);
+		tmpMat = arma::sqrtmat(corr);
 	}
-	colvec armaDraws(conv_to<colvec>::from(draws));
+	arma::colvec armaDraws(arma::conv_to<arma::colvec>::from(draws));
 	armaDraws = tmpMat * armaDraws;
 	return armaDraws;
 }

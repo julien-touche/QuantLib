@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 
 #include "Distributions.h"
+#include "typedef.h"
 #include <cmath>
 
 vDbl a({ 2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637 });
